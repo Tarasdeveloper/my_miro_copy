@@ -11,23 +11,29 @@ import { Input } from "@/shared/ui/kit/input";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLogin } from "./use-login";
+import { useRegister } from "../model/use-register";
 
-const loginSchema = z.object({
-  email: z
-    .string({ required_error: "Email обязателен" })
-    .email("Введите корректный email"),
-  password: z.string().min(6, "Пароль должен содержать не менее 6 символов"),
-});
-
-export default function LoginForm() {
-  const form = useForm({
-    resolver: zodResolver(loginSchema),
+const registerSchema = z
+  .object({
+    email: z
+      .string({ required_error: "Email обязателен" })
+      .email("Введите корректный email"),
+    password: z.string().min(6, "Пароль должен содержать не менее 6 символов"),
+    confirmPassword: z.string().optional(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Пароли не совпадают",
   });
 
-  const { errorMessage, isPending, login } = useLogin();
+export default function RegisterForm() {
+  const form = useForm({
+    resolver: zodResolver(registerSchema),
+  });
 
-  const onSubmit = form.handleSubmit(login);
+  const { errorMessage, isPending, register } = useRegister();
+
+  const onSubmit = form.handleSubmit(register);
 
   return (
     <Form {...form}>
@@ -39,7 +45,7 @@ export default function LoginForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="admin@gmail.com" type="email" {...field} />
+                <Input placeholder="admin@mail.com" type="email" {...field} />
               </FormControl>
 
               <FormMessage />
@@ -60,11 +66,25 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="confirmPassword"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Confirm Password</FormLabel>
+              <FormControl>
+                <Input type="password" {...field} />
+              </FormControl>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         {errorMessage && (
           <p className="text-destructive text-sm">{errorMessage}</p>
         )}
         <Button disabled={isPending} type="submit">
-          Войти
+          Зарегистрироваться
         </Button>
       </form>
     </Form>
