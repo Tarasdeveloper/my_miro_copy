@@ -1,6 +1,6 @@
 import { ApiSchemas } from "../../schema";
 import { http } from "../http";
-import { delay, HttpResponse } from "msw";
+import { HttpResponse } from "msw";
 import {
   createRefreshTokenCookie,
   generateTokens,
@@ -24,7 +24,7 @@ export const authHandlers = [
     const user = mockUsers.find((u) => u.email === body.email);
     const storedPassword = userPasswords.get(body.email);
 
-    await delay(1000); // Simulate network delay
+    // await delay(1000); // Simulate network delay
 
     if (!user || !storedPassword || storedPassword !== body.password) {
       return HttpResponse.json(
@@ -55,7 +55,7 @@ export const authHandlers = [
   http.post("/auth/register", async ({ request }) => {
     const body = await request.json();
 
-    await delay(1000); // Simulate network delay
+    // await delay(1000); // Simulate network delay
 
     if (mockUsers.some((u) => u.email === body.email)) {
       return HttpResponse.json(

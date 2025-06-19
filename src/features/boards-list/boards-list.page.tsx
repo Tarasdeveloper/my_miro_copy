@@ -1,13 +1,10 @@
-import { useState, useRef } from "react";
-import { rqClient } from "@/shared/api/instance";
+import { Link, href } from "react-router-dom";
 import { CONFIG } from "@/shared/model/config";
 import { ROUTES } from "@/shared/model/routes";
-import { Button } from "@/shared/ui/kit/button";
 import { Card, CardFooter, CardHeader } from "@/shared/ui/kit/card";
-import { useQueryClient } from "@tanstack/react-query";
-import { Link, href } from "react-router-dom";
 import { Input } from "@/shared/ui/kit/input";
 import { Label } from "@/shared/ui/kit/label";
+import { Button } from "@/shared/ui/kit/button";
 import {
   Select,
   SelectContent,
@@ -16,84 +13,27 @@ import {
   SelectValue,
 } from "@/shared/ui/kit/select";
 import { Switch } from "@/shared/ui/kit/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
-import { ApiSchemas } from "@/shared/api/schema";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
 import { useBoardsList } from "./use-boards-list";
 import { useBoardsFilters } from "./use-boards-filters";
+import { useDebouncedValue } from "@/shared/lib/react";
+import { useCreateBoard } from "./use-create-board";
+import { useDeleteBoard } from "./use-delete-board";
+import { useUpdateFavorite } from "./use-update-favorite";
+import { StarIcon } from "lucide-react";
 
 type BoardsSortOption = "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
 
 function BoardsListPage() {
-  const queryClient = useQueryClient();
-
-  const [search, setSearch] = useState("");
-  const [sort, setSort] = useState<BoardsSortOption>("lastOpenedAt");
-
   const boardsFilters = useBoardsFilters();
   const boardsQuery = useBoardsList({
     sort: boardsFilters.sort,
-    search: boardsFilters.search,
+    search: useDebouncedValue(boardsFilters.search, 300),
   });
 
-  // Обновляем список досок при получении новых данных
-  // useEffect(() => {
-  //   if (boardsQuery.data?.list) {
-  //     if (page === 1) {
-  //       setBoards(boardsQuery.data.list);
-  //     } else {
-  //       setBoards((prev) => [...prev, ...boardsQuery.data.list]);
-  //     }
-  //     setHasMore(page < (boardsQuery.data.totalPages || 1));
-  //     setIsLoadingMore(false);
-  //   }
-  // }, [boardsQuery.data, page]);
-
-  // // Функция для загрузки следующей страницы
-  // const loadMore = useCallback(() => {
-  //   if (!isLoadingMore && hasMore && !boardsQuery.isPending) {
-  //     setIsLoadingMore(true);
-  //     setPage((prevPage) => prevPage + 1);
-  //   }
-  // }, [isLoadingMore, hasMore, boardsQuery.isPending]);
-
-  const createBoardMutation = rqClient.useMutation("post", "/boards", {
-    onSettled: async () => {
-      await queryClient.invalidateQueries(
-        rqClient.queryOptions("get", "/boards"),
-      );
-    },
-  });
-
-  const deleteBoardMutation = rqClient.useMutation(
-    "delete",
-    "/boards/{boardId}",
-    {
-      onSettled: async () => {
-        await queryClient.invalidateQueries(
-          rqClient.queryOptions("get", "/boards"),
-        );
-      },
-    },
-  );
-
-  const toggleFavoriteMutation = rqClient.useMutation(
-    "put",
-    "/boards/{boardId}/favorite",
-    {
-      onSettled: async () => {
-        await queryClient.invalidateQueries(
-          rqClient.queryOptions("get", "/boards"),
-        );
-      },
-    },
-  );
-
-  const handleToggleFavorite = (board: ApiSchemas["Board"]) => {
-    toggleFavoriteMutation.mutate({
-      params: { path: { boardId: board.id } },
-      body: { isFavorite: !board.isFavorite },
-    });
-  };
+  const createBoard = useCreateBoard();
+  const deleteBoard = useDeleteBoard();
+  const updateFavorite = useUpdateFavorite();
 
   return (
     <div className="container mx-auto p-4">
@@ -140,26 +80,12 @@ function BoardsListPage() {
       </Tabs>
 
       <div className="mb-8">
-        <form
-          className="flex gap-4 items-end"
-          onSubmit={(e) => {
-            e.preventDefault();
-            createBoardMutation.mutate({});
-            e.currentTarget.reset();
-          }}
+        <Button
+          disabled={createBoard.isPending}
+          onClick={createBoard.createBoard}
         >
-          <div className="flex-grow">
-            <Label htmlFor="board-name">Название новой доски</Label>
-            <Input
-              id="board-name"
-              name="name"
-              placeholder="Введите название..."
-            />
-          </div>
-          <Button type="submit" disabled={createBoardMutation.isPending}>
-            Создать доску
-          </Button>
-        </form>
+          Создать доску
+        </Button>
       </div>
 
       {boardsQuery.isPending ? (
@@ -170,13 +96,13 @@ function BoardsListPage() {
             {boardsQuery.boards.map((board) => (
               <Card key={board.id} className="relative">
                 <div className="absolute top-2 right-2 flex items-center gap-2">
-                  <Switch
-                    checked={board.isFavorite}
-                    onCheckedChange={() => handleToggleFavorite(board)}
-                  />
                   <span className="text-sm text-gray-500">
-                    {board.isFavorite ? "В избранном" : ""}
+                    <StarIcon />
                   </span>
+                  <Switch
+                    checked={updateFavorite.isOptimisticFavorite(board)}
+                    onCheckedChange={() => updateFavorite.toggle(board)}
+                  />
                 </div>
                 <CardHeader>
                   <div className="flex flex-col gap-2">
@@ -203,12 +129,8 @@ function BoardsListPage() {
                 <CardFooter>
                   <Button
                     variant="destructive"
-                    disabled={deleteBoardMutation.isPending}
-                    onClick={() =>
-                      deleteBoardMutation.mutate({
-                        params: { path: { boardId: board.id } },
-                      })
-                    }
+                    disabled={deleteBoard.getIsPending(board.id)}
+                    onClick={() => deleteBoard.deleteBoard(board.id)}
                   >
                     Удалить
                   </Button>

@@ -17,8 +17,8 @@ export function useBoardsFilters() {
 
   return {
     search,
-    sort,
     setSearch,
+    sort,
     setSort,
   };
 }

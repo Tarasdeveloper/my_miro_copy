@@ -240,6 +240,8 @@ export const boardsHandlers = [
     const { boardId } = params;
     const index = boards.findIndex((board) => board.id === boardId);
 
+    // await delay(1000); // Имитируем задержку в 1 секунду
+
     if (index === -1) {
       return HttpResponse.json(
         { message: "Board not found", code: "NOT_FOUND" },
