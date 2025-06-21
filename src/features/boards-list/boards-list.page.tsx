@@ -1,5 +1,4 @@
 import { Link, href } from "react-router-dom";
-import { CONFIG } from "@/shared/model/config";
 import { ROUTES } from "@/shared/model/routes";
 import { Card, CardFooter, CardHeader } from "@/shared/ui/kit/card";
 import { Input } from "@/shared/ui/kit/input";
@@ -13,14 +12,20 @@ import {
   SelectValue,
 } from "@/shared/ui/kit/select";
 import { Switch } from "@/shared/ui/kit/switch";
-import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
 import { useBoardsList } from "./use-boards-list";
 import { useBoardsFilters } from "./use-boards-filters";
 import { useDebouncedValue } from "@/shared/lib/react";
 import { useCreateBoard } from "./use-create-board";
 import { useDeleteBoard } from "./use-delete-board";
 import { useUpdateFavorite } from "./use-update-favorite";
-import { StarIcon } from "lucide-react";
+import { PlusIcon, StarIcon } from "lucide-react";
+import {
+  BoardsListLayout,
+  BoardsListLayoutFilters,
+  BoardsListLayoutHeader,
+} from "./boards-list-layout";
+import { ViewMode, ViewModeToggle } from "./view-mode-toggle";
+import { useState } from "react";
 
 type BoardsSortOption = "createdAt" | "updatedAt" | "lastOpenedAt" | "name";
 
@@ -35,59 +40,58 @@ function BoardsListPage() {
   const deleteBoard = useDeleteBoard();
   const updateFavorite = useUpdateFavorite();
 
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">Доски {CONFIG.API_BASE_URL}</h1>
-
-      <div className="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="md:col-span-3">
-          <Label htmlFor="search">Поиск</Label>
-          <Input
-            id="search"
-            placeholder="Введите название доски..."
-            value={boardsFilters.search}
-            onChange={(e) => boardsFilters.setSearch(e.target.value)}
-            className="w-full"
-          />
-        </div>
-
-        <div className="flex flex-col">
-          <Label htmlFor="sort">Сортировка</Label>
-          <Select
-            value={boardsFilters.sort}
-            onValueChange={(value) =>
-              boardsFilters.setSort(value as BoardsSortOption)
-            }
-          >
-            <SelectTrigger id="sort" className="w-full">
-              <SelectValue placeholder="Сортировка" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="lastOpenedAt">По дате открытия</SelectItem>
-              <SelectItem value="createdAt">По дате создания</SelectItem>
-              <SelectItem value="updatedAt">По дате обновления</SelectItem>
-              <SelectItem value="name">По имени</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <Tabs defaultValue="all" className="mb-6">
-        <TabsList>
-          <TabsTrigger value="all">Все доски</TabsTrigger>
-          <TabsTrigger value="favorites">Избранные</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <div className="mb-8">
-        <Button
-          disabled={createBoard.isPending}
-          onClick={createBoard.createBoard}
-        >
-          Создать доску
-        </Button>
-      </div>
-
+    <BoardsListLayout
+      header={
+        <BoardsListLayoutHeader
+          title="Доски"
+          description="Здесь вы можете просматривать и управлять своими досками"
+          actions={
+            <ViewModeToggle value={viewMode} onChange={setViewMode} />
+            // <Button
+            //   disabled={createBoard.isPending}
+            //   onClick={createBoard.createBoard}
+            // >
+            //   <PlusIcon />
+            //   Создать новую доску
+            // </Button>
+          }
+        />
+      }
+      filters={
+        <BoardsListLayoutFilters
+          sort={
+            <Select
+              value={boardsFilters.sort}
+              onValueChange={(value) =>
+                boardsFilters.setSort(value as BoardsSortOption)
+              }
+            >
+              <SelectTrigger id="sort" className="w-full">
+                <SelectValue placeholder="Сортировка" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="lastOpenedAt">По дате открытия</SelectItem>
+                <SelectItem value="createdAt">По дате создания</SelectItem>
+                <SelectItem value="updatedAt">По дате обновления</SelectItem>
+                <SelectItem value="name">По имени</SelectItem>
+              </SelectContent>
+            </Select>
+          }
+          filters={
+            <Input
+              id="search"
+              placeholder="Введите название доски..."
+              value={boardsFilters.search}
+              onChange={(e) => boardsFilters.setSearch(e.target.value)}
+              className="w-full"
+            />
+          }
+        ></BoardsListLayoutFilters>
+      }
+    >
       {boardsQuery.isPending ? (
         <div className="text-center py-10">Загрузка...</div>
       ) : (
@@ -149,7 +153,7 @@ function BoardsListPage() {
           )}
         </>
       )}
-    </div>
+    </BoardsListLayout>
   );
 }
 
