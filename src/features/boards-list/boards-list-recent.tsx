@@ -31,7 +31,7 @@ function BoardsListPage() {
     <BoardsListLayout
       header={
         <BoardsListLayoutHeader
-          title="Избранные доски"
+          title="Последние доски"
           description="Здесь вы можете просматривать и управлять своими досками"
           actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
         />

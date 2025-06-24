@@ -61,6 +61,7 @@ export const useSession = createGStore(() => {
         return null;
       }
     }
+    // return token;
   };
 
   return { login, logout, session, refreshToken };

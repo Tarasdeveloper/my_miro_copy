@@ -7,18 +7,19 @@ import { useDeleteBoard } from "./model/use-delete-board";
 import { useUpdateFavorite } from "./model/use-update-favorite";
 import { PlusIcon } from "lucide-react";
 import {
-  BoardsListCardsLayout,
   BoardsListLayout,
   BoardsListLayoutContent,
   BoardsListLayoutFilters,
   BoardsListLayoutHeader,
-  BoardsListListLayout,
 } from "./ui/boards-list-layout";
 import { ViewMode, ViewModeToggle } from "./ui/view-mode-toggle";
 import { useState } from "react";
 import { BoardsSortSelect } from "./ui/boards-sort-select";
 import { BoardsSearchInput } from "./ui/boards-search-input";
 import { BoardsListCard } from "./ui/boards-list-card";
+import { BoardsFavoriteToggle } from "./ui/boards-favorite-toggle";
+import { BoardsListItem } from "./ui/boards-list-item";
+import { DropdownMenuItem } from "@/shared/ui/kit/dropdown-menu";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -74,35 +75,60 @@ function BoardsListPage() {
         isPendingNext={boardsQuery.isFetchingNextPage}
         cursorRef={boardsQuery.cursorRef}
         hasCursor={boardsQuery.hasNextPage}
-      >
-        {viewMode === "list" ? (
-          <BoardsListListLayout>
-            {boardsQuery.boards.map((board) => (
-              <BoardsListCard
-                key={board.id}
-                board={board}
-                isFavorite={updateFavorite.isOptimisticFavorite(board)}
-                onFavoriteToggle={() => updateFavorite.toggle(board)}
-                onDelete={() => deleteBoard.deleteBoard(board.id)}
-                isDeletePending={deleteBoard.getIsPending(board.id)}
-              />
-            ))}
-          </BoardsListListLayout>
-        ) : (
-          <BoardsListCardsLayout>
-            {boardsQuery.boards.map((board) => (
-              <BoardsListCard
-                key={board.id}
-                board={board}
-                isFavorite={updateFavorite.isOptimisticFavorite(board)}
-                onFavoriteToggle={() => updateFavorite.toggle(board)}
-                onDelete={() => deleteBoard.deleteBoard(board.id)}
-                isDeletePending={deleteBoard.getIsPending(board.id)}
-              />
-            ))}
-          </BoardsListCardsLayout>
-        )}
-      </BoardsListLayoutContent>
+        mode={viewMode}
+        renderList={() =>
+          boardsQuery.boards.map(
+            (board) =>
+              updateFavorite.isOptimisticFavorite(board) && (
+                <BoardsListItem
+                  key={board.id}
+                  board={board}
+                  rightActions={
+                    <BoardsFavoriteToggle
+                      isFavorite={updateFavorite.isOptimisticFavorite(board)}
+                      onToggle={() => updateFavorite.toggle(board)}
+                    />
+                  }
+                  menuActions={
+                    <DropdownMenuItem
+                      variant={"destructive"}
+                      disabled={deleteBoard.getIsPending(board.id)}
+                      onClick={() => deleteBoard.deleteBoard(board.id)}
+                    >
+                      Удалить
+                    </DropdownMenuItem>
+                  }
+                />
+              ),
+          )
+        }
+        renderGrid={() =>
+          boardsQuery.boards.map(
+            (board) =>
+              updateFavorite.isOptimisticFavorite(board) && (
+                <BoardsListCard
+                  key={board.id}
+                  board={board}
+                  rightTopActions={
+                    <BoardsFavoriteToggle
+                      isFavorite={updateFavorite.isOptimisticFavorite(board)}
+                      onToggle={() => updateFavorite.toggle(board)}
+                    />
+                  }
+                  bottomActions={
+                    <Button
+                      variant={"destructive"}
+                      disabled={deleteBoard.getIsPending(board.id)}
+                      onClick={() => deleteBoard.deleteBoard(board.id)}
+                    >
+                      Удалить
+                    </Button>
+                  }
+                />
+              ),
+          )
+        }
+      />
     </BoardsListLayout>
   );
 }
