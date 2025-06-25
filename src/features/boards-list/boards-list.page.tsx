@@ -3,8 +3,6 @@ import { useBoardsList } from "./model/use-boards-list";
 import { useBoardsFilters } from "./model/use-boards-filters";
 import { useDebouncedValue } from "@/shared/lib/react";
 import { useCreateBoard } from "./model/use-create-board";
-import { useDeleteBoard } from "./model/use-delete-board";
-import { useUpdateFavorite } from "./model/use-update-favorite";
 import { PlusIcon } from "lucide-react";
 import {
   BoardsListLayout,
@@ -16,10 +14,8 @@ import { ViewMode, ViewModeToggle } from "./ui/view-mode-toggle";
 import { useState } from "react";
 import { BoardsSortSelect } from "./ui/boards-sort-select";
 import { BoardsSearchInput } from "./ui/boards-search-input";
-import { BoardsListCard } from "./ui/boards-list-card";
-import { BoardsFavoriteToggle } from "./ui/boards-favorite-toggle";
-import { BoardsListItem } from "./ui/boards-list-item";
-import { DropdownMenuItem } from "@/shared/ui/kit/dropdown-menu";
+import { BoardItem } from "./compose/board-item";
+import { BoardCard } from "./compose/board-card";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -29,8 +25,6 @@ function BoardsListPage() {
   });
 
   const createBoard = useCreateBoard();
-  const deleteBoard = useDeleteBoard();
-  const updateFavorite = useUpdateFavorite();
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
@@ -77,56 +71,14 @@ function BoardsListPage() {
         hasCursor={boardsQuery.hasNextPage}
         mode={viewMode}
         renderList={() =>
-          boardsQuery.boards.map(
-            (board) =>
-              updateFavorite.isOptimisticFavorite(board) && (
-                <BoardsListItem
-                  key={board.id}
-                  board={board}
-                  rightActions={
-                    <BoardsFavoriteToggle
-                      isFavorite={updateFavorite.isOptimisticFavorite(board)}
-                      onToggle={() => updateFavorite.toggle(board)}
-                    />
-                  }
-                  menuActions={
-                    <DropdownMenuItem
-                      variant={"destructive"}
-                      disabled={deleteBoard.getIsPending(board.id)}
-                      onClick={() => deleteBoard.deleteBoard(board.id)}
-                    >
-                      Удалить
-                    </DropdownMenuItem>
-                  }
-                />
-              ),
-          )
+          boardsQuery.boards.map((board) => (
+            <BoardItem key={board.id} board={board} />
+          ))
         }
         renderGrid={() =>
-          boardsQuery.boards.map(
-            (board) =>
-              updateFavorite.isOptimisticFavorite(board) && (
-                <BoardsListCard
-                  key={board.id}
-                  board={board}
-                  rightTopActions={
-                    <BoardsFavoriteToggle
-                      isFavorite={updateFavorite.isOptimisticFavorite(board)}
-                      onToggle={() => updateFavorite.toggle(board)}
-                    />
-                  }
-                  bottomActions={
-                    <Button
-                      variant={"destructive"}
-                      disabled={deleteBoard.getIsPending(board.id)}
-                      onClick={() => deleteBoard.deleteBoard(board.id)}
-                    >
-                      Удалить
-                    </Button>
-                  }
-                />
-              ),
-          )
+          boardsQuery.boards.map((board) => (
+            <BoardCard key={board.id} board={board} />
+          ))
         }
       />
     </BoardsListLayout>
