@@ -8,6 +8,7 @@ import { ViewMode, ViewModeToggle } from "./ui/view-mode-toggle";
 import { useState } from "react";
 import { BoardItem } from "./compose/board-item";
 import { BoardCard } from "./compose/board-card";
+import { BoardsSidebar } from "./ui/boards-sidebar";
 
 function BoardsListPage() {
   const boardsQuery = useBoardsList({
@@ -18,6 +19,7 @@ function BoardsListPage() {
 
   return (
     <BoardsListLayout
+      sidebar={<BoardsSidebar />}
       header={
         <BoardsListLayoutHeader
           title="Избранные доски"

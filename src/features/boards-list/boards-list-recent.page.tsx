@@ -1,15 +1,18 @@
 import { useBoardsList } from "./model/use-boards-list";
 import {
   BoardsListLayout,
+  BoardsListLayoutCard,
   BoardsListLayoutContent,
   BoardsListLayoutContentGroups,
   BoardsListLayoutHeader,
+  BoardsListLayoutList,
 } from "./ui/boards-list-layout";
 import { ViewMode, ViewModeToggle } from "./ui/view-mode-toggle";
 import { useState } from "react";
 import { useRecentGroups } from "./model/use-recent-groups";
 import { BoardItem } from "./compose/board-item";
 import { BoardCard } from "./compose/board-card";
+import { BoardsSidebar } from "./ui/boards-sidebar";
 
 function BoardsListPage() {
   const boardsQuery = useBoardsList({
@@ -22,6 +25,7 @@ function BoardsListPage() {
 
   return (
     <BoardsListLayout
+      sidebar={<BoardsSidebar />}
       header={
         <BoardsListLayoutHeader
           title="Последние доски"
@@ -41,8 +45,20 @@ function BoardsListPage() {
       <BoardsListLayoutContentGroups
         groups={recentGroups.map((group) => ({
           items: {
-            list: group.items.map((board) => <BoardItem board={board} />),
-            cards: group.items.map((board) => <BoardCard board={board} />),
+            list: (
+              <BoardsListLayoutList>
+                {group.items.map((board) => (
+                  <BoardItem board={board} />
+                ))}
+              </BoardsListLayoutList>
+            ),
+            cards: (
+              <BoardsListLayoutCard>
+                {group.items.map((board) => (
+                  <BoardCard board={board} />
+                ))}
+              </BoardsListLayoutCard>
+            ),
           }[viewMode],
           title: group.title,
         }))}

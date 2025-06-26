@@ -16,6 +16,12 @@ import { BoardsSortSelect } from "./ui/boards-sort-select";
 import { BoardsSearchInput } from "./ui/boards-search-input";
 import { BoardItem } from "./compose/board-item";
 import { BoardCard } from "./compose/board-card";
+import { BoardsSidebar } from "./ui/boards-sidebar";
+import {
+  TemplatesGallery,
+  TemplatesModal,
+  useTemplatesModal,
+} from "@/features/board-templates";
 
 function BoardsListPage() {
   const boardsFilters = useBoardsFilters();
@@ -24,64 +30,79 @@ function BoardsListPage() {
     search: useDebouncedValue(boardsFilters.search, 300),
   });
 
+  const templatesModal = useTemplatesModal();
+
   const createBoard = useCreateBoard();
 
   const [viewMode, setViewMode] = useState<ViewMode>("list");
 
   return (
-    <BoardsListLayout
-      header={
-        <BoardsListLayoutHeader
-          title="Доски"
-          description="Здесь вы можете просматривать и управлять своими досками"
-          actions={
-            <Button
-              disabled={createBoard.isPending}
-              onClick={createBoard.createBoard}
-            >
-              <PlusIcon />
-              Создать новую доску
-            </Button>
+    <>
+      <TemplatesModal />
+      <BoardsListLayout
+        templates={<TemplatesGallery />}
+        sidebar={<BoardsSidebar />}
+        header={
+          <BoardsListLayoutHeader
+            title="Доски"
+            description="Здесь вы можете просматривать и управлять своими досками"
+            actions={
+              <>
+                <Button
+                  variant={"outline"}
+                  onClick={() => templatesModal.open()}
+                >
+                  Выбрать шаблон
+                </Button>
+                <Button
+                  disabled={createBoard.isPending}
+                  onClick={createBoard.createBoard}
+                >
+                  <PlusIcon />
+                  Создать новую доску
+                </Button>
+              </>
+            }
+          />
+        }
+        filters={
+          <BoardsListLayoutFilters
+            sort={
+              <BoardsSortSelect
+                value={boardsFilters.sort}
+                onValueChange={boardsFilters.setSort}
+              />
+            }
+            filters={
+              <BoardsSearchInput
+                value={boardsFilters.search}
+                onChange={boardsFilters.setSearch}
+              />
+            }
+            actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
+          />
+        }
+      >
+        <BoardsListLayoutContent
+          isEmpty={boardsQuery.boards.length === 0}
+          isPending={boardsQuery.isPending}
+          isPendingNext={boardsQuery.isFetchingNextPage}
+          cursorRef={boardsQuery.cursorRef}
+          hasCursor={boardsQuery.hasNextPage}
+          mode={viewMode}
+          renderList={() =>
+            boardsQuery.boards.map((board) => (
+              <BoardItem key={board.id} board={board} />
+            ))
+          }
+          renderGrid={() =>
+            boardsQuery.boards.map((board) => (
+              <BoardCard key={board.id} board={board} />
+            ))
           }
         />
-      }
-      filters={
-        <BoardsListLayoutFilters
-          sort={
-            <BoardsSortSelect
-              value={boardsFilters.sort}
-              onValueChange={boardsFilters.setSort}
-            />
-          }
-          filters={
-            <BoardsSearchInput
-              value={boardsFilters.search}
-              onChange={boardsFilters.setSearch}
-            />
-          }
-          actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
-        />
-      }
-    >
-      <BoardsListLayoutContent
-        isEmpty={boardsQuery.boards.length === 0}
-        isPending={boardsQuery.isPending}
-        isPendingNext={boardsQuery.isFetchingNextPage}
-        cursorRef={boardsQuery.cursorRef}
-        hasCursor={boardsQuery.hasNextPage}
-        mode={viewMode}
-        renderList={() =>
-          boardsQuery.boards.map((board) => (
-            <BoardItem key={board.id} board={board} />
-          ))
-        }
-        renderGrid={() =>
-          boardsQuery.boards.map((board) => (
-            <BoardCard key={board.id} board={board} />
-          ))
-        }
-      />
-    </BoardsListLayout>
+      </BoardsListLayout>
+    </>
   );
 }
 
