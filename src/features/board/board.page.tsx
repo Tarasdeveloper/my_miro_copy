@@ -1,81 +1,59 @@
+import { PathParams, ROUTES } from "@/shared/model/routes";
+import { Button } from "@/shared/ui/kit/button";
 import { ArrowRightIcon, StickerIcon } from "lucide-react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 
-import { useNodes } from "./model/nodes";
-import { useCanvasRect } from "./hooks/use-canvas-rect";
-import { useLayoutFocus } from "./hooks/use-layout-focus";
-import { useViewModel } from "./view-model/use-view-model";
-import { useWindowEvents } from "./hooks/use-window-events";
-import { SelectionWindow } from "./ui/selection-window";
-import { Overlay } from "./ui/overlay";
-import { Layout } from "./ui/layout";
-import { Dots } from "./ui/dots";
-import { Canvas } from "./ui/canvas";
-import { Sticker } from "./ui/nodes/sticker";
-import { Actions } from "./ui/actions";
-import { ActionButton } from "./ui/action-button";
-import { useNodesDimensions } from "./hooks/use-nodes-dimensions";
-import { useWindowPositionModel } from "./model/window-position";
-import { Arrow } from "./ui/nodes/arrow";
+type NodeBase = {
+  id: string;
+  type: string;
+};
+
+type StickerNode = NodeBase & {
+  type: "sticker";
+  text: string;
+  x: number;
+  y: number;
+};
+
+type Node = StickerNode;
+
+function useNodes() {
+  const [nodes] = useState<Node[]>([
+    {
+      id: "1",
+      type: "sticker",
+      text: "hello",
+      x: 100,
+      y: 100,
+    },
+    {
+      id: "2",
+      type: "sticker",
+      text: "hello",
+      x: 200,
+      y: 200,
+    },
+  ]);
+  return {
+    nodes,
+  };
+}
 
 function BoardPage() {
-  const nodesModel = useNodes();
-  const windowPositionModel = useWindowPositionModel();
-  const focusLayoutRef = useLayoutFocus();
-  const { canvasRef, canvasRect } = useCanvasRect();
-  const { nodeRef, nodesDimensions } = useNodesDimensions();
-
-  const viewModel = useViewModel({
-    nodesModel,
-    canvasRect,
-    nodesDimensions,
-    windowPositionModel,
-  });
-
-  useWindowEvents(viewModel);
-
-  const windowPosition =
-    viewModel.windowPosition ?? windowPositionModel.position;
-
+  const params = useParams<PathParams[typeof ROUTES.BOARD]>();
   return (
-    <Layout ref={focusLayoutRef} onKeyDown={viewModel.layout?.onKeyDown}>
-      <Dots windowPosition={windowPosition} />
-
-      <Canvas
-        ref={canvasRef}
-        overlay={
-          <Overlay
-            onClick={viewModel.overlay?.onClick}
-            onMouseDown={viewModel.overlay?.onMouseDown}
-            onMouseUp={viewModel.overlay?.onMouseUp}
-          />
-        }
-        onClick={viewModel.canvas?.onClick}
-        windowPosition={windowPosition}
-      >
-        {viewModel.nodes.map((node) => {
-          if (node.type === "sticker") {
-            return <Sticker key={node.id} {...node} ref={nodeRef} />;
-          }
-          if (node.type === "arrow") {
-            return <Arrow key={node.id} {...node} ref={nodeRef} />;
-          }
-        })}
-        {viewModel.selectionWindow && (
-          <SelectionWindow {...viewModel.selectionWindow} />
-        )}
+    <Layout>
+      <Dots />
+      <Canvas>
+        <Sticker text="Hello" x={100} y={100} />
+        <Sticker text="Hello" x={200} y={200} />
       </Canvas>
-
       <Actions>
-        <ActionButton
-          isActive={viewModel.actions?.addSticker?.isActive}
-          onClick={viewModel.actions?.addSticker?.onClick}
-        >
+        <ActionButton isActive={false} onClick={() => {}}>
           <StickerIcon />
         </ActionButton>
-        <ActionButton
-          isActive={viewModel.actions?.addArrow?.isActive}
-          onClick={viewModel.actions?.addArrow?.onClick}
-        >
+        <ActionButton isActive={false} onClick={() => {}}>
           <ArrowRightIcon />
         </ActionButton>
       </Actions>
@@ -84,3 +62,72 @@ function BoardPage() {
 }
 
 export const Component = BoardPage;
+
+function Layout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="grow relative" tabIndex={0}>
+      {children}
+    </div>
+  );
+}
+
+function Dots() {
+  return (
+    <div className="absolute inset-0 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px]"></div>
+  );
+}
+
+function Canvas({
+  children,
+  ...props
+}: { children: React.ReactNode } & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div {...props} className="absolute inset-0">
+      {children}
+    </div>
+  );
+}
+
+function Sticker({ text, x, y }: { text: string; x: number; y: number }) {
+  return (
+    <div
+      className="absolute bg-yellow-300 px-2 py-4 rounded-xs shadow-md"
+      style={{ transform: `translate(${x}px, ${y}px)` }}
+    >
+      {text}
+    </div>
+  );
+}
+
+function Actions({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="absolute left-4 top-1/2 -translate-y-1/2 flex flex-col gap-2 bg-white p-1 rounded-md shadow">
+      {children}
+    </div>
+  );
+}
+
+function ActionButton({
+  children,
+  isActive,
+  onClick,
+}: {
+  children: React.ReactNode;
+  isActive: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      className={
+        isActive
+          ? "bg-blue-500/30 hover:bg-blue-600/30 text-blue-500 hover:text-blue-600"
+          : ""
+      }
+      onClick={onClick}
+    >
+      {children}
+    </Button>
+  );
+}
