@@ -19,9 +19,9 @@ export function BoardsListLayout({
     <div className="container mx-auto">
       <div className="flex gap-4">
         {sidebar}
-        <div className="flex-1 p-4 flex flex-col gap-6">
+        <div className="flex-1  p-4 flex flex-col gap-6">
           {templates && (
-            <div className="rounded-md p-4 bg-gray-100">{templates}</div>
+            <div className="rounded-md bg-gray-100 p-4">{templates}</div>
           )}
           {header}
           {filters}
@@ -42,15 +42,17 @@ export function BoardsListLayoutHeader({
   actions?: React.ReactNode;
 }) {
   return (
-    <div className="flex items-center justify-between mb-6">
+    <div className="flex justify-between items-center">
       <div>
-        <h1 className="text-2xl font-bold mb-6">{title}</h1>
+        <h1 className="text-2xl font-bold">{title}</h1>
         {description && <p className="text-gray-500">{description}</p>}
       </div>
+
       <div className="flex gap-2">{actions}</div>
     </div>
   );
 }
+
 export function BoardsListLayoutFilters({
   sort,
   filters,
@@ -71,7 +73,7 @@ export function BoardsListLayoutFilters({
         </div>
       )}
       {sort && (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ">
           <div className="text-sm text-gray-500 whitespace-nowrap">Sort by</div>
           {sort}
         </div>
@@ -83,11 +85,11 @@ export function BoardsListLayoutFilters({
 
 export function BoardsListLayoutContent({
   children,
-  hasCursor,
   cursorRef,
-  isPendingNext,
-  isPending,
+  hasCursor,
   isEmpty,
+  isPending,
+  isPendingNext,
   mode,
   renderList,
   renderGrid,
@@ -109,7 +111,7 @@ export function BoardsListLayoutContent({
         <BoardsListLayoutList>{renderList?.()}</BoardsListLayoutList>
       )}
       {mode === "cards" && renderGrid && (
-        <BoardsListLayoutCard>{renderGrid?.()}</BoardsListLayoutCard>
+        <BoardsListLayoutCards>{renderGrid?.()}</BoardsListLayoutCards>
       )}
       {!isPending && children}
 
@@ -141,7 +143,7 @@ export function BoardsListLayoutContent({
   );
 }
 
-export function BoardsListLayoutCard({
+export function BoardsListLayoutCards({
   children,
 }: {
   children: React.ReactNode;
@@ -161,7 +163,7 @@ export function BoardsListLayoutList({
   return <div className="flex flex-col gap-2">{children}</div>;
 }
 
-export function BoardsListLayoutContentGroups({
+export function BoardsLayoutContentGroups({
   groups,
 }: {
   groups: {

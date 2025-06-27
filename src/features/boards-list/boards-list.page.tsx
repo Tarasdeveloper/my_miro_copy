@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/shared/ui/kit/button";
 import { useBoardsList } from "./model/use-boards-list";
 import { useBoardsFilters } from "./model/use-boards-filters";
 import { useDebouncedValue } from "@/shared/lib/react";
 import { useCreateBoard } from "./model/use-create-board";
+
 import { PlusIcon } from "lucide-react";
 import {
   BoardsListLayout,
@@ -11,7 +13,6 @@ import {
   BoardsListLayoutHeader,
 } from "./ui/boards-list-layout";
 import { ViewMode, ViewModeToggle } from "./ui/view-mode-toggle";
-import { useState } from "react";
 import { BoardsSortSelect } from "./ui/boards-sort-select";
 import { BoardsSearchInput } from "./ui/boards-search-input";
 import { BoardItem } from "./compose/board-item";
@@ -48,10 +49,7 @@ function BoardsListPage() {
             description="Здесь вы можете просматривать и управлять своими досками"
             actions={
               <>
-                <Button
-                  variant={"outline"}
-                  onClick={() => templatesModal.open()}
-                >
+                <Button variant="outline" onClick={() => templatesModal.open()}>
                   Выбрать шаблон
                 </Button>
                 <Button
@@ -59,7 +57,7 @@ function BoardsListPage() {
                   onClick={createBoard.createBoard}
                 >
                   <PlusIcon />
-                  Создать новую доску
+                  Создать доску
                 </Button>
               </>
             }
@@ -79,7 +77,12 @@ function BoardsListPage() {
                 onChange={boardsFilters.setSearch}
               />
             }
-            actions={<ViewModeToggle value={viewMode} onChange={setViewMode} />}
+            actions={
+              <ViewModeToggle
+                value={viewMode}
+                onChange={(value) => setViewMode(value)}
+              />
+            }
           />
         }
       >

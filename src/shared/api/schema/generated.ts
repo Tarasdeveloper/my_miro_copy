@@ -154,7 +154,7 @@ export interface paths {
                         [name: string]: unknown;
                     };
                     content: {
-                        "application/json": components["schemas"]["BoardList"];
+                        "application/json": components["schemas"]["BoardsList"];
                     };
                 };
                 401: components["responses"]["UnauthorizedError"];
@@ -196,7 +196,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Get a board by ID */
+        /** Get a board by id */
         get: {
             parameters: {
                 query?: never;
@@ -275,7 +275,7 @@ export interface paths {
                 };
             };
             responses: {
-                /** @description Board updated successfully */
+                /** @description Board created successfully */
                 201: {
                     headers: {
                         [name: string]: unknown;
@@ -377,7 +377,7 @@ export interface components {
             lastOpenedAt: string;
             isFavorite: boolean;
         };
-        BoardList: {
+        BoardsList: {
             list: components["schemas"]["Board"][];
             total: number;
             totalPages: number;

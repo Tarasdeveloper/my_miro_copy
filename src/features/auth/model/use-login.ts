@@ -20,7 +20,7 @@ export function useLogin() {
   };
 
   const errorMessage = loginMutation.isError
-    ? loginMutation.error?.message
+    ? loginMutation.error.message
     : undefined;
 
   return {

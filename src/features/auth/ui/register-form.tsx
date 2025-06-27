@@ -16,9 +16,15 @@ import { useRegister } from "../model/use-register";
 const registerSchema = z
   .object({
     email: z
-      .string({ required_error: "Email обязателен" })
-      .email("Введите корректный email"),
-    password: z.string().min(6, "Пароль должен содержать не менее 6 символов"),
+      .string({
+        required_error: "Email обязателен",
+      })
+      .email("Неверный email"),
+    password: z
+      .string({
+        required_error: "Пароль обязателен",
+      })
+      .min(6, "Пароль должен быть не менее 6 символов"),
     confirmPassword: z.string().optional(),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -26,7 +32,7 @@ const registerSchema = z
     message: "Пароли не совпадают",
   });
 
-export default function RegisterForm() {
+export function RegisterForm() {
   const form = useForm({
     resolver: zodResolver(registerSchema),
   });
@@ -45,7 +51,7 @@ export default function RegisterForm() {
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="admin@mail.com" type="email" {...field} />
+                <Input placeholder="admin@gmail.com" {...field} />
               </FormControl>
 
               <FormMessage />
@@ -57,9 +63,9 @@ export default function RegisterForm() {
           name="password"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Password</FormLabel>
+              <FormLabel>Пароль</FormLabel>
               <FormControl>
-                <Input placeholder="*******" {...field} />
+                <Input placeholder="******" type="password" {...field} />
               </FormControl>
 
               <FormMessage />
@@ -71,7 +77,7 @@ export default function RegisterForm() {
           name="confirmPassword"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Confirm Password</FormLabel>
+              <FormLabel>Подтвердите пароль</FormLabel>
               <FormControl>
                 <Input type="password" {...field} />
               </FormControl>
@@ -80,9 +86,11 @@ export default function RegisterForm() {
             </FormItem>
           )}
         />
+
         {errorMessage && (
           <p className="text-destructive text-sm">{errorMessage}</p>
         )}
+
         <Button disabled={isPending} type="submit">
           Зарегистрироваться
         </Button>

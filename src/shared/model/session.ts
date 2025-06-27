@@ -30,7 +30,9 @@ export const useSession = createGStore(() => {
   const session = token ? jwtDecode<Session>(token) : null;
 
   const refreshToken = async () => {
-    if (!token) return null;
+    if (!token) {
+      return null;
+    }
 
     const session = jwtDecode<Session>(token);
 
@@ -61,8 +63,9 @@ export const useSession = createGStore(() => {
         return null;
       }
     }
-    // return token;
+
+    return token;
   };
 
-  return { login, logout, session, refreshToken };
+  return { refreshToken, login, logout, session };
 });

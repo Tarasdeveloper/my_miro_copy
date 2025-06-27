@@ -16,13 +16,12 @@ export function useDeleteBoard() {
   );
 
   return {
-    isPending: deleteBoardMutation.isPending,
     deleteBoard: (boardId: string) =>
       deleteBoardMutation.mutate({
         params: { path: { boardId } },
       }),
     getIsPending: (boardId: string) =>
       deleteBoardMutation.isPending &&
-      deleteBoardMutation.variables?.params?.path.boardId === boardId,
+      deleteBoardMutation.variables?.params?.path?.boardId === boardId,
   };
 }

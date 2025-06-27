@@ -8,7 +8,6 @@ export function useRegister() {
   const navigate = useNavigate();
 
   const session = useSession();
-
   const registerMutation = publicRqClient.useMutation(
     "post",
     "/auth/register",
@@ -25,7 +24,7 @@ export function useRegister() {
   };
 
   const errorMessage = registerMutation.isError
-    ? registerMutation.error?.message
+    ? registerMutation.error.message
     : undefined;
 
   return {

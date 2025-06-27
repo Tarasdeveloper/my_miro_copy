@@ -1,8 +1,7 @@
-import { Tabs, TabsList, TabsTrigger } from "@radix-ui/react-tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/shared/ui/kit/tabs";
 import { ImagesIcon, ListIcon } from "lucide-react";
 
 export type ViewMode = "list" | "cards";
-
 export function ViewModeToggle({
   value,
   onChange,

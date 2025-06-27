@@ -1,6 +1,6 @@
 import { ApiSchemas } from "../../schema";
 import { http } from "../http";
-import { HttpResponse } from "msw";
+import { delay, HttpResponse } from "msw";
 import {
   createRefreshTokenCookie,
   generateTokens,
@@ -10,12 +10,12 @@ import {
 const mockUsers: ApiSchemas["User"][] = [
   {
     id: "1",
-    email: "admin@mail.com",
+    email: "admin@gmail.com",
   },
 ];
 
 const userPasswords = new Map<string, string>();
-userPasswords.set("admin@mail.com", "123456");
+userPasswords.set("admin@gmail.com", "123456");
 
 export const authHandlers = [
   http.post("/auth/login", async ({ request }) => {
@@ -24,7 +24,7 @@ export const authHandlers = [
     const user = mockUsers.find((u) => u.email === body.email);
     const storedPassword = userPasswords.get(body.email);
 
-    // await delay(1000); // Simulate network delay
+    await delay();
 
     if (!user || !storedPassword || storedPassword !== body.password) {
       return HttpResponse.json(
@@ -40,6 +40,7 @@ export const authHandlers = [
       userId: user.id,
       email: user.email,
     });
+
     return HttpResponse.json(
       {
         accessToken: accessToken,
@@ -47,7 +48,9 @@ export const authHandlers = [
       },
       {
         status: 200,
-        headers: { "Set-Cookie": createRefreshTokenCookie(refreshToken) },
+        headers: {
+          "Set-Cookie": createRefreshTokenCookie(refreshToken),
+        },
       },
     );
   }),
@@ -55,7 +58,7 @@ export const authHandlers = [
   http.post("/auth/register", async ({ request }) => {
     const body = await request.json();
 
-    // await delay(1000); // Simulate network delay
+    await delay();
 
     if (mockUsers.some((u) => u.email === body.email)) {
       return HttpResponse.json(
@@ -87,7 +90,9 @@ export const authHandlers = [
       },
       {
         status: 201,
-        headers: { "Set-Cookie": createRefreshTokenCookie(refreshToken) },
+        headers: {
+          "Set-Cookie": createRefreshTokenCookie(refreshToken),
+        },
       },
     );
   }),
