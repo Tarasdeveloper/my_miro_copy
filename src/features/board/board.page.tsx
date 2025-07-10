@@ -1,30 +1,74 @@
 import { Button } from "@/shared/ui/kit/button";
 import { ArrowRightIcon, StickerIcon } from "lucide-react";
 import { useNodes } from "./nodes";
-import { useBoardViewState } from "./view-state";
-import { Ref } from "react";
+import { useViewModel } from "./view-model";
+import { Ref, useEffect, useRef } from "react";
 import { useCanvasRect } from "./use-canvas-rect";
+
+function useLayoutFocus() {
+    const layoutRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (layoutRef.current) {
+            layoutRef.current.focus();
+        }
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === "visible") {
+                layoutRef.current?.focus();
+            }
+        };
+
+        window.addEventListener("visibilitychange", handleVisibilityChange);
+
+        return () => {
+            window.removeEventListener(
+                "visibilitychange",
+                handleVisibilityChange,
+            );
+        };
+    }, [layoutRef]);
+
+    return layoutRef;
+}
 
 function BoardPage() {
     const { nodes, addSticker } = useNodes();
-    const { viewState, goToAddSticker, goToIdle } = useBoardViewState();
-
+    const viewModel = useViewModel();
+    const focusLayoutRef = useLayoutFocus();
     const { canvasRef, canvasRect } = useCanvasRect();
+
     console.log(canvasRect);
 
     return (
-        <Layout>
+        <Layout
+            ref={focusLayoutRef}
+            onKeyDown={(e) => {
+                if (viewModel.viewState.type === "add-sticker") {
+                    if (e.key === "Escape") {
+                        viewModel.goToIdle();
+                    }
+                }
+                if (viewModel.viewState.type === "idle") {
+                    if (e.key === "s") {
+                        viewModel.goToAddSticker();
+                    }
+                }
+            }}
+        >
             <Dots />
             <Canvas
                 ref={canvasRef}
                 onClick={(e) => {
-                    if (viewState.type === "add-sticker" && canvasRect) {
+                    if (
+                        viewModel.viewState.type === "add-sticker" &&
+                        canvasRect
+                    ) {
                         addSticker({
                             text: "Default",
                             x: e.clientX - canvasRect.x,
                             y: e.clientY - canvasRect.y,
                         });
-                        goToIdle();
+                        viewModel.goToIdle();
                     }
                 }}
             >
@@ -39,12 +83,12 @@ function BoardPage() {
             </Canvas>
             <Actions>
                 <ActionButton
-                    isActive={viewState.type === "add-sticker"}
+                    isActive={viewModel.viewState.type === "add-sticker"}
                     onClick={() => {
-                        if (viewState.type === "add-sticker") {
-                            goToIdle();
+                        if (viewModel.viewState.type === "add-sticker") {
+                            viewModel.goToIdle();
                         } else {
-                            goToAddSticker();
+                            viewModel.goToAddSticker();
                         }
                     }}
                 >
@@ -60,9 +104,16 @@ function BoardPage() {
 
 export const Component = BoardPage;
 
-export function Layout({ children }: { children: React.ReactNode }) {
+export function Layout({
+    children,
+    ref,
+    ...props
+}: {
+    children: React.ReactNode;
+    ref: Ref<HTMLDivElement>;
+} & React.HTMLAttributes<HTMLDivElement>) {
     return (
-        <div className="grow relative" tabIndex={0}>
+        <div className="grow relative" tabIndex={0} ref={ref} {...props}>
             {children}
         </div>
     );
