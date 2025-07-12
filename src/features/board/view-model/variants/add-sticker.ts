@@ -1,4 +1,5 @@
-import { ViewModel, ViewModelParams } from "../use-view-model";
+import { ViewModelParams } from "../view-model-params";
+import { ViewModel } from "../view-model-type";
 
 export function useAddStickerViewModel({
     nodesModel,
