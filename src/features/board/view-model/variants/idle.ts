@@ -1,8 +1,10 @@
+import { distanceFromPoints } from "../../domain/point";
 import { SelectionModifier, selectItems } from "../../domain/selection";
 import { CanvasRect } from "../../hooks/use-canvas-rect";
 import { ViewModelParams } from "../view-model-params";
 import { ViewModel } from "../view-model-type";
 import { goToAddSticker } from "./add-sticker";
+import { goToSelectionWindow } from "./selection-window";
 
 export type IdleViewState = {
     type: "idle";
@@ -76,9 +78,19 @@ export function useIdleViewModel({
                     mouseDown: undefined,
                 });
             },
-            onMouseMove: () => {
+            onMouseMove: (e) => {
                 if (idleState.mouseDown) {
-                    console.log(idleState);
+                    const currentPoint = {
+                        x: e.clientX,
+                        y: e.clientY,
+                    };
+
+                    if (
+                        distanceFromPoints(idleState.mouseDown, currentPoint) >
+                        5
+                    ) {
+                        setViewState(goToSelectionWindow());
+                    }
                 }
             },
         },
