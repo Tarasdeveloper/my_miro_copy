@@ -2,7 +2,7 @@ import {
     AddStickerViewState,
     useAddStickerViewModel,
 } from "./variants/add-sticker";
-import { IdleViewState, useIdleViewModel } from "./variants/idle";
+import { goToIdle, IdleViewState, useIdleViewModel } from "./variants/idle";
 import { ViewModel } from "./view-model-type";
 import { ViewModelParams } from "./view-model-params";
 import { useState } from "react";
@@ -17,10 +17,7 @@ export type ViewState =
     | SelectionWindowViewState;
 
 export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
-    const [viewState, setViewState] = useState<ViewState>({
-        type: "idle",
-        selectedIds: new Set(),
-    });
+    const [viewState, setViewState] = useState<ViewState>(() => goToIdle());
 
     const newParams = {
         ...params,
@@ -38,11 +35,12 @@ export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
             viewModel = addStickerViewModel();
             break;
         case "idle": {
+            console.log("idle", viewState);
             viewModel = idleViewModel(viewState);
             break;
         }
         case "selection-window":
-            viewModel = selectionWindowViewModel();
+            viewModel = selectionWindowViewModel(viewState);
             break;
         default:
             throw new Error("Invalid view state");

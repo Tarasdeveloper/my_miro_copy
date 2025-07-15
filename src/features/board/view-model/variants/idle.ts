@@ -1,6 +1,10 @@
 import { distanceFromPoints } from "../../domain/point";
-import { SelectionModifier, selectItems } from "../../domain/selection";
-import { CanvasRect } from "../../hooks/use-canvas-rect";
+import { pointOnScreenToCanvas } from "../../domain/screen-to-canvas";
+import {
+    Selection,
+    SelectionModifier,
+    selectItems,
+} from "../../domain/selection";
 import { ViewModelParams } from "../view-model-params";
 import { ViewModel } from "../view-model-type";
 import { goToAddSticker } from "./add-sticker";
@@ -32,12 +36,6 @@ export function useIdleViewModel({
     };
 
     return (idleState: IdleViewState): ViewModel => ({
-        selectionWindow: {
-            x: 100,
-            y: 100,
-            width: 500,
-            height: 100,
-        },
         nodes: nodesModel.nodes.map((node) => ({
             ...node,
             isSelected: idleState.selectedIds.has(node.id),
@@ -57,41 +55,60 @@ export function useIdleViewModel({
             },
         },
         overlay: {
-            onClick: () => {
-                select(idleState, [], "replace");
-            },
             onMouseDown: (e) => {
-                if (!canvasRect) return;
                 setViewState({
                     ...idleState,
-                    mouseDown: {
-                        x: e.clientX,
-                        y: e.clientY,
-                    },
+                    mouseDown: pointOnScreenToCanvas(
+                        {
+                            x: e.clientX,
+                            y: e.clientY,
+                        },
+                        canvasRect,
+                    ),
                 });
+            },
+            onMouseUp: () => {
+                if (idleState.mouseDown) {
+                    setViewState({
+                        ...idleState,
+                        selectedIds: selectItems(
+                            idleState.selectedIds,
+                            [],
+                            "replace",
+                        ),
+                    });
+                }
             },
         },
         window: {
-            onMouseUp: () => {
-                setViewState({
-                    ...idleState,
-                    mouseDown: undefined,
-                });
-            },
             onMouseMove: (e) => {
                 if (idleState.mouseDown) {
-                    const currentPoint = {
+                    const currentPoint = pointOnScreenToCanvas({
                         x: e.clientX,
                         y: e.clientY,
-                    };
+                    });
 
                     if (
                         distanceFromPoints(idleState.mouseDown, currentPoint) >
                         5
                     ) {
-                        setViewState(goToSelectionWindow());
+                        setViewState(
+                            goToSelectionWindow({
+                                startPoint: idleState.mouseDown,
+                                endPoint: currentPoint,
+                                initialSelectedIds: e.shiftKey
+                                    ? idleState.selectedIds
+                                    : undefined,
+                            }),
+                        );
                     }
                 }
+            },
+            onMouseUp: () => {
+                setViewState({
+                    ...idleState,
+                    mouseDown: undefined,
+                });
             },
         },
         actions: {
@@ -103,20 +120,13 @@ export function useIdleViewModel({
     });
 }
 
-export function goToIdle(): IdleViewState {
+export function goToIdle({
+    selectedIds,
+}: {
+    selectedIds?: Selection;
+} = {}): IdleViewState {
     return {
         type: "idle",
-        selectedIds: new Set(),
-    };
-}
-
-export function pointOnScreenToCanvas(
-    point: { x: number; y: number },
-    canvasRect?: CanvasRect,
-) {
-    if (!canvasRect) return point;
-    return {
-        x: point.x - canvasRect.x,
-        y: point.y - canvasRect.y,
+        selectedIds: selectedIds ?? new Set(),
     };
 }
