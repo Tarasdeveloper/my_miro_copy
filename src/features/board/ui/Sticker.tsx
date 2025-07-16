@@ -2,6 +2,7 @@ import clsx from "clsx";
 import React, { Ref } from "react";
 
 export function Sticker({
+    id,
     text,
     x,
     y,
@@ -9,6 +10,7 @@ export function Sticker({
     ref,
     selected,
 }: {
+    id: string;
     ref: Ref<HTMLButtonElement>;
     text: string;
     x: number;
@@ -18,6 +20,7 @@ export function Sticker({
 }) {
     return (
         <button
+            data-id={id}
             ref={ref}
             className={clsx(
                 "absolute bg-yellow-300 px-2 py-4 rounded-xs shadow-md",

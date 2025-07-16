@@ -18,7 +18,7 @@ function BoardPage() {
     const nodesModel = useNodes();
     const focusLayoutRef = useLayoutFocus();
     const { canvasRef, canvasRect } = useCanvasRect();
-    const { nodesRef } = useNodesRects();
+    const { nodeRef } = useNodesRects();
 
     const viewModel = useViewModel({
         nodesModel,
@@ -38,12 +38,14 @@ function BoardPage() {
                 />
                 {viewModel.nodes.map((node) => (
                     <Sticker
+                        id={node.id}
                         key={node.id}
                         text={node.text}
                         x={node.x}
                         y={node.y}
                         selected={node.isSelected}
                         onClick={node.onClick}
+                        ref={nodeRef}
                     />
                 ))}
             </Canvas>

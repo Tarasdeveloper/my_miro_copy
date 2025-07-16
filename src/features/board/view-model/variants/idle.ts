@@ -52,6 +52,16 @@ export function useIdleViewModel({
                 if (e.key === "s") {
                     setViewState(goToAddSticker());
                 }
+                if (e.key === "Delete" || e.key === "Backspace") {
+                    if (idleState.selectedIds.size > 0) {
+                        const ids = Array.from(idleState.selectedIds);
+                        nodesModel.deleteNodes(ids);
+                        setViewState({
+                            ...idleState,
+                            selectedIds: new Set(),
+                        });
+                    }
+                }
             },
         },
         overlay: {

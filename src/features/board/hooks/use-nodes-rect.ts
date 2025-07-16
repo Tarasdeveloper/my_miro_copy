@@ -12,13 +12,25 @@ export const useNodesRects = () => {
 
     const resizeObserverRef = useRef<ResizeObserver | undefined>(undefined);
 
-    const nodeRef: RefCallback<HTMLElement> = useCallback((el) => {
+    const nodeRef: RefCallback<Element> = useCallback((el) => {
         if (!resizeObserverRef.current) {
             resizeObserverRef.current = new ResizeObserver((entries) => {
-                console.log(entries);
-                for (const entry of entries) {
-                    const { width, height } = entry.contentRect;
-                }
+                const nodesToUpdate = Object.fromEntries(
+                    entries
+                        .map((entry) => [
+                            (entry.target as HTMLElement).dataset.id,
+                            {
+                                width: entry.contentRect.width,
+                                height: entry.contentRect.height,
+                            },
+                        ])
+                        .filter((entry) => !!entry[0]),
+                );
+
+                setNodesRect((prev) => ({
+                    ...prev,
+                    ...nodesToUpdate,
+                }));
             });
         }
 
@@ -27,6 +39,11 @@ export const useNodesRects = () => {
         if (el) {
             resizeObserver.observe(el);
             return () => {
+                setNodesRect((prev) => {
+                    const newNodesRect = { ...prev };
+                    delete newNodesRect[(el as HTMLElement).dataset.id ?? ""];
+                    return newNodesRect;
+                });
                 resizeObserver.unobserve(el);
             };
         }
@@ -40,6 +57,8 @@ export const useNodesRects = () => {
         },
         [],
     );
+
+    console.log("nodesRect", nodesRect);
 
     return { nodeRef, nodesRect };
 };

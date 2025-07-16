@@ -35,7 +35,6 @@ export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
             viewModel = addStickerViewModel();
             break;
         case "idle": {
-            console.log("idle", viewState);
             viewModel = idleViewModel(viewState);
             break;
         }
