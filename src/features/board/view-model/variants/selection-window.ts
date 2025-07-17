@@ -1,5 +1,10 @@
 import { Point } from "../../domain/point";
-import { createRectFromPoints, isPointInRect } from "../../domain/rect";
+import {
+    createRectFromDimensions,
+    createRectFromPoints,
+    isRectIntersecting,
+    Rect,
+} from "../../domain/rect";
 import { pointOnScreenToCanvas } from "../../domain/screen-to-canvas";
 import { selectItems } from "../../domain/selection";
 import { ViewModelParams } from "../view-model-params";
@@ -17,28 +22,44 @@ export function useSelectionWindowViewModel({
     nodesModel,
     canvasRect,
     setViewState,
+    nodesDimensions,
 }: ViewModelParams) {
-    return (state: SelectionWindowViewState): ViewModel => {
-        const rect = createRectFromPoints(state.startPoint, state.endPoint);
-        return {
-            selectionWindow: rect,
-            nodes: nodesModel.nodes.map((node) => ({
+    const getNodes = (state: SelectionWindowViewState, selectionRect: Rect) =>
+        nodesModel.nodes.map((node) => {
+            const nodeDimentions = nodesDimensions[node.id];
+            const nodeRect = createRectFromDimensions(node, nodeDimentions);
+
+            return {
                 ...node,
                 isSelected:
-                    isPointInRect(node, rect) ||
+                    isRectIntersecting(nodeRect, selectionRect) ||
                     state.initialSelectedIds.has(node.id),
-            })),
+            };
+        });
+
+    return (state: SelectionWindowViewState): ViewModel => {
+        const rect = createRectFromPoints(state.startPoint, state.endPoint);
+        const nodes = getNodes(state, rect);
+        return {
+            nodes,
+            selectionWindow: rect,
             window: {
                 onMouseMove: (e) => {
                     const currentPoint = pointOnScreenToCanvas(
-                        { x: e.clientX, y: e.clientY },
+                        {
+                            x: e.clientX,
+                            y: e.clientY,
+                        },
                         canvasRect,
                     );
-                    setViewState({ ...state, endPoint: currentPoint });
+                    setViewState({
+                        ...state,
+                        endPoint: currentPoint,
+                    });
                 },
                 onMouseUp: () => {
-                    const nodesIdsInRect = nodesModel.nodes
-                        .filter((node) => isPointInRect(node, rect))
+                    const nodesIdsInRect = nodes
+                        .filter((node) => node.isSelected)
                         .map((node) => node.id);
 
                     setViewState(

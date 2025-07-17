@@ -1,14 +1,16 @@
 import { RefCallback, useCallback, useEffect, useRef, useState } from "react";
 
-export type NodeRect = {
+export type NodeDimensions = {
     width: number;
     height: number;
 };
 
-export type NodeRectsMap = Record<string, NodeRect>;
+export type NodesDimensionsMap = Record<string, NodeDimensions>;
 
-export const useNodesRects = () => {
-    const [nodesRect, setNodesRect] = useState<NodeRect>();
+export const useNodesDimensions = () => {
+    const [nodesDimensions, setNodesDimensions] = useState<NodesDimensionsMap>(
+        {},
+    );
 
     const resizeObserverRef = useRef<ResizeObserver | undefined>(undefined);
 
@@ -20,14 +22,14 @@ export const useNodesRects = () => {
                         .map((entry) => [
                             (entry.target as HTMLElement).dataset.id,
                             {
-                                width: entry.contentRect.width,
-                                height: entry.contentRect.height,
+                                width: entry.borderBoxSize[0].inlineSize,
+                                height: entry.borderBoxSize[0].blockSize,
                             },
                         ])
                         .filter((entry) => !!entry[0]),
                 );
 
-                setNodesRect((prev) => ({
+                setNodesDimensions((prev) => ({
                     ...prev,
                     ...nodesToUpdate,
                 }));
@@ -39,10 +41,12 @@ export const useNodesRects = () => {
         if (el) {
             resizeObserver.observe(el);
             return () => {
-                setNodesRect((prev) => {
-                    const newNodesRect = { ...prev };
-                    delete newNodesRect[(el as HTMLElement).dataset.id ?? ""];
-                    return newNodesRect;
+                setNodesDimensions((prev) => {
+                    const newNodesDimensions = { ...prev };
+                    delete newNodesDimensions[
+                        (el as HTMLElement).dataset.id ?? ""
+                    ];
+                    return newNodesDimensions;
                 });
                 resizeObserver.unobserve(el);
             };
@@ -58,7 +62,5 @@ export const useNodesRects = () => {
         [],
     );
 
-    console.log("nodesRect", nodesRect);
-
-    return { nodeRef, nodesRect };
+    return { nodeRef, nodesDimensions };
 };
