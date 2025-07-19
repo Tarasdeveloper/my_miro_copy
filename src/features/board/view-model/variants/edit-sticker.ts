@@ -33,9 +33,6 @@ export function useEditStickerViewModel({
         layout: {
             onKeyDown: (e) => {
                 if (e.key === "Escape") {
-                    setViewState(goToIdle());
-                }
-                if (e.key === "Enter") {
                     if (viewState.newText) {
                         nodesModel.updateStickerText(
                             viewState.stickerId,
@@ -47,7 +44,15 @@ export function useEditStickerViewModel({
             },
         },
         overlay: {
-            onClick: () => setViewState(goToIdle()),
+            onClick: () => {
+                if (viewState.newText) {
+                    nodesModel.updateStickerText(
+                        viewState.stickerId,
+                        viewState.newText,
+                    );
+                }
+                setViewState(goToIdle());
+            },
         },
     });
 }

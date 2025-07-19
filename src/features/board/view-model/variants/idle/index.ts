@@ -1,15 +1,14 @@
-import { distanceFromPoints } from "../../domain/point";
-import { pointOnScreenToCanvas } from "../../domain/screen-to-canvas";
-import {
-    Selection,
-    SelectionModifier,
-    selectItems,
-} from "../../domain/selection";
-import { ViewModelParams } from "../view-model-params";
-import { ViewModel } from "../view-model-type";
-import { goToAddSticker } from "./add-sticker";
-import { goToEditSticker } from "./edit-sticker";
-import { goToSelectionWindow } from "./selection-window";
+import { MouseEvent } from "react";
+import { distanceFromPoints } from "../../../domain/point";
+import { pointOnScreenToCanvas } from "../../../domain/screen-to-canvas";
+import { Selection } from "../../../domain/selection";
+import { ViewModelParams } from "../../view-model-params";
+import { ViewModel } from "../../view-model-type";
+import { goToAddSticker } from "../add-sticker";
+import { goToEditSticker } from "../edit-sticker";
+import { goToSelectionWindow } from "../selection-window";
+import { useSelection } from "./use-selection";
+import { useDeleteSelected } from "./useDeleteSelected";
 
 export type IdleViewState = {
     type: "idle";
@@ -20,53 +19,42 @@ export type IdleViewState = {
     };
 };
 
-export function useIdleViewModel({
-    nodesModel,
-    canvasRect,
-    setViewState,
-}: ViewModelParams) {
-    const select = (
-        lastState: IdleViewState,
-        ids: string[],
-        modif: SelectionModifier,
+export function useGoToEditSticker(params: ViewModelParams) {
+    const { setViewState } = params;
+    const handleNodeClick = (
+        idleState: IdleViewState,
+        nodeId: string,
+        e: MouseEvent<HTMLButtonElement>,
     ) => {
-        setViewState({
-            ...lastState,
-            selectedIds: selectItems(lastState.selectedIds, ids, modif),
-        });
-    };
-
-    const deleteSelected = (viewState: IdleViewState) => {
-        if (viewState.selectedIds.size > 0) {
-            const ids = Array.from(viewState.selectedIds);
-            nodesModel.deleteNodes(ids);
-            setViewState({
-                ...viewState,
-                selectedIds: new Set(),
-            });
+        if (
+            idleState.selectedIds.size === 1 &&
+            idleState.selectedIds.has(nodeId) &&
+            !e.ctrlKey &&
+            !e.shiftKey
+        ) {
+            setViewState(goToEditSticker(nodeId));
+            return { preventNext: true };
         }
+        return {
+            preventNext: false,
+        };
     };
+}
+
+export function useGoToAddSticker(params: ViewModelParams) {}
+
+export function useIdleViewModel(params: ViewModelParams) {
+    const { nodesModel, setViewState, canvasRect } = params;
+
+    const selection = useSelection(params);
+    const deleteSelected = useDeleteSelected(params);
 
     return (idleState: IdleViewState): ViewModel => ({
         nodes: nodesModel.nodes.map((node) => ({
             ...node,
-            isSelected: idleState.selectedIds.has(node.id),
+            isSelected: selection.isSelected(idleState, node.id),
             onClick: (e) => {
-                if (
-                    idleState.selectedIds.size === 1 &&
-                    idleState.selectedIds.has(node.id) &&
-                    !e.ctrlKey &&
-                    !e.shiftKey
-                ) {
-                    setViewState(goToEditSticker(node.id));
-                    return;
-                }
-
-                if (e.ctrlKey || e.shiftKey) {
-                    select(idleState, [node.id], "toggle");
-                } else {
-                    select(idleState, [node.id], "replace");
-                }
+                selection.handleNodeClick(idleState, node.id, e);
             },
         })),
         layout: {
@@ -86,9 +74,8 @@ export function useIdleViewModel({
                 if (e.key === "s") {
                     setViewState(goToAddSticker());
                 }
-                if (e.key === "Delete" || e.key === "Backspace") {
-                    deleteSelected(idleState);
-                }
+
+                deleteSelected.handleKeyDown(idleState, e);
             },
         },
         overlay: {
@@ -104,18 +91,7 @@ export function useIdleViewModel({
                     ),
                 });
             },
-            onMouseUp: () => {
-                if (idleState.mouseDown) {
-                    setViewState({
-                        ...idleState,
-                        selectedIds: selectItems(
-                            idleState.selectedIds,
-                            [],
-                            "replace",
-                        ),
-                    });
-                }
-            },
+            onMouseUp: () => selection.handleOverlayMouseUp(idleState),
         },
         window: {
             onMouseMove: (e) => {
