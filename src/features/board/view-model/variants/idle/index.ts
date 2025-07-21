@@ -1,14 +1,14 @@
-import { MouseEvent } from "react";
 import { distanceFromPoints } from "../../../domain/point";
 import { pointOnScreenToCanvas } from "../../../domain/screen-to-canvas";
 import { Selection } from "../../../domain/selection";
 import { ViewModelParams } from "../../view-model-params";
 import { ViewModel } from "../../view-model-type";
-import { goToAddSticker } from "../add-sticker";
-import { goToEditSticker } from "../edit-sticker";
 import { goToSelectionWindow } from "../selection-window";
 import { useSelection } from "./use-selection";
 import { useDeleteSelected } from "./useDeleteSelected";
+import { useGoToAddSticker } from "./useGoToAddSticker";
+import { useGoToEditSticker } from "./useGoToEditSticker";
+import { useMouseDown } from "./useMouseDown";
 
 export type IdleViewState = {
     type: "idle";
@@ -19,78 +19,43 @@ export type IdleViewState = {
     };
 };
 
-export function useGoToEditSticker(params: ViewModelParams) {
-    const { setViewState } = params;
-    const handleNodeClick = (
-        idleState: IdleViewState,
-        nodeId: string,
-        e: MouseEvent<HTMLButtonElement>,
-    ) => {
-        if (
-            idleState.selectedIds.size === 1 &&
-            idleState.selectedIds.has(nodeId) &&
-            !e.ctrlKey &&
-            !e.shiftKey
-        ) {
-            setViewState(goToEditSticker(nodeId));
-            return { preventNext: true };
-        }
-        return {
-            preventNext: false,
-        };
-    };
-}
-
-export function useGoToAddSticker(params: ViewModelParams) {}
-
 export function useIdleViewModel(params: ViewModelParams) {
     const { nodesModel, setViewState, canvasRect } = params;
 
     const selection = useSelection(params);
     const deleteSelected = useDeleteSelected(params);
+    const goToEditSticker = useGoToEditSticker(params);
+    const goToAddSticker = useGoToAddSticker(params);
+    const mouseDown = useMouseDown(params);
 
     return (idleState: IdleViewState): ViewModel => ({
         nodes: nodesModel.nodes.map((node) => ({
             ...node,
             isSelected: selection.isSelected(idleState, node.id),
             onClick: (e) => {
+                const clickResult = goToEditSticker.handleNodeClick(
+                    idleState,
+                    node.id,
+                    e,
+                );
+                if (clickResult.preventNext) return;
                 selection.handleNodeClick(idleState, node.id, e);
             },
         })),
         layout: {
             onKeyDown: (e) => {
-                if (
-                    !e.shiftKey &&
-                    !e.altKey &&
-                    !e.metaKey &&
-                    !e.ctrlKey &&
-                    idleState.selectedIds.size === 1
-                ) {
-                    const [id] = idleState.selectedIds.values();
-                    setViewState(goToEditSticker(id));
-                    return;
-                }
-
-                if (e.key === "s") {
-                    setViewState(goToAddSticker());
-                }
+                const keyDounResult = goToEditSticker.handleKeyDown(
+                    idleState,
+                    e,
+                );
+                if (keyDounResult.preventNext) return;
 
                 deleteSelected.handleKeyDown(idleState, e);
+                goToAddSticker.handleKeyDown(e);
             },
         },
         overlay: {
-            onMouseDown: (e) => {
-                setViewState({
-                    ...idleState,
-                    mouseDown: pointOnScreenToCanvas(
-                        {
-                            x: e.clientX,
-                            y: e.clientY,
-                        },
-                        canvasRect,
-                    ),
-                });
-            },
+            onMouseDown: (e) => mouseDown.handleOverlayMouseDown(idleState, e),
             onMouseUp: () => selection.handleOverlayMouseUp(idleState),
         },
         window: {
@@ -127,7 +92,7 @@ export function useIdleViewModel(params: ViewModelParams) {
         actions: {
             addSticker: {
                 isActive: false,
-                onClick: () => setViewState(goToAddSticker()),
+                onClick: goToAddSticker.handleActionClick,
             },
         },
     });
