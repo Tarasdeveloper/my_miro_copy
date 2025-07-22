@@ -11,7 +11,7 @@ export function useGoToSelectionWindow(params: ViewModelParams) {
         idleState: IdleViewState,
         e: MouseEvent,
     ) => {
-        if (idleState.mouseDown) {
+        if (idleState.mouseDown && idleState.mouseDown.type === "overlay") {
             const currentPoint = pointOnScreenToCanvas(
                 {
                     x: e.clientX,

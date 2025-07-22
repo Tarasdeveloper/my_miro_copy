@@ -7,14 +7,23 @@ import { useGoToAddSticker } from "./useGoToAddSticker";
 import { useGoToEditSticker } from "./useGoToEditSticker";
 import { useMouseDown } from "./useMouseDown";
 import { useGoToSelectionWindow } from "./useGoToSelectionWindow";
+import { useGoToNodesDragging } from "./useGoToNodesDragging";
 
 export type IdleViewState = {
     type: "idle";
     selectedIds: Set<string>;
-    mouseDown?: {
-        x: number;
-        y: number;
-    };
+    mouseDown?:
+        | {
+              type: "overlay";
+              x: number;
+              y: number;
+          }
+        | {
+              type: "node";
+              x: number;
+              y: number;
+              nodeId: string;
+          };
 };
 
 export function useIdleViewModel(params: ViewModelParams) {
@@ -24,6 +33,7 @@ export function useIdleViewModel(params: ViewModelParams) {
     const goToEditSticker = useGoToEditSticker(params);
     const goToAddSticker = useGoToAddSticker(params);
     const goToSelectionWindow = useGoToSelectionWindow(params);
+    const goToNodesDragging = useGoToNodesDragging(params);
     const selection = useSelection(params);
     const mouseDown = useMouseDown(params);
 
@@ -31,7 +41,11 @@ export function useIdleViewModel(params: ViewModelParams) {
         nodes: nodesModel.nodes.map((node) => ({
             ...node,
             isSelected: selection.isSelected(idleState, node.id),
-            onClick: (e) => {
+            onMouseDown: (e) =>
+                mouseDown.handleNodeMouseDown(idleState, node.id, e),
+            onMouseUp: (e) => {
+                if (!mouseDown.getIsStickerMouseDown(idleState, node.id))
+                    return;
                 const clickResult = goToEditSticker.handleNodeClick(
                     idleState,
                     node.id,
@@ -58,8 +72,10 @@ export function useIdleViewModel(params: ViewModelParams) {
             onMouseUp: () => selection.handleOverlayMouseUp(idleState),
         },
         window: {
-            onMouseMove: (e) =>
-                goToSelectionWindow.handleIdleWindowMouseMove(idleState, e),
+            onMouseMove: (e) => {
+                goToNodesDragging.handleIdleWindowMouseMove(idleState, e);
+                goToSelectionWindow.handleIdleWindowMouseMove(idleState, e);
+            },
             onMouseUp: () => mouseDown.handleWindowMouseUp(idleState),
         },
         actions: {
