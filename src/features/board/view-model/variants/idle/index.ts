@@ -1,14 +1,12 @@
-import { distanceFromPoints } from "../../../domain/point";
-import { pointOnScreenToCanvas } from "../../../domain/screen-to-canvas";
 import { Selection } from "../../../domain/selection";
 import { ViewModelParams } from "../../view-model-params";
 import { ViewModel } from "../../view-model-type";
-import { goToSelectionWindow } from "../selection-window";
 import { useSelection } from "./use-selection";
 import { useDeleteSelected } from "./useDeleteSelected";
 import { useGoToAddSticker } from "./useGoToAddSticker";
 import { useGoToEditSticker } from "./useGoToEditSticker";
 import { useMouseDown } from "./useMouseDown";
+import { useGoToSelectionWindow } from "./useGoToSelectionWindow";
 
 export type IdleViewState = {
     type: "idle";
@@ -20,12 +18,13 @@ export type IdleViewState = {
 };
 
 export function useIdleViewModel(params: ViewModelParams) {
-    const { nodesModel, setViewState, canvasRect } = params;
+    const { nodesModel } = params;
 
-    const selection = useSelection(params);
     const deleteSelected = useDeleteSelected(params);
     const goToEditSticker = useGoToEditSticker(params);
     const goToAddSticker = useGoToAddSticker(params);
+    const goToSelectionWindow = useGoToSelectionWindow(params);
+    const selection = useSelection(params);
     const mouseDown = useMouseDown(params);
 
     return (idleState: IdleViewState): ViewModel => ({
@@ -59,35 +58,9 @@ export function useIdleViewModel(params: ViewModelParams) {
             onMouseUp: () => selection.handleOverlayMouseUp(idleState),
         },
         window: {
-            onMouseMove: (e) => {
-                if (idleState.mouseDown) {
-                    const currentPoint = pointOnScreenToCanvas({
-                        x: e.clientX,
-                        y: e.clientY,
-                    });
-
-                    if (
-                        distanceFromPoints(idleState.mouseDown, currentPoint) >
-                        5
-                    ) {
-                        setViewState(
-                            goToSelectionWindow({
-                                startPoint: idleState.mouseDown,
-                                endPoint: currentPoint,
-                                initialSelectedIds: e.shiftKey
-                                    ? idleState.selectedIds
-                                    : undefined,
-                            }),
-                        );
-                    }
-                }
-            },
-            onMouseUp: () => {
-                setViewState({
-                    ...idleState,
-                    mouseDown: undefined,
-                });
-            },
+            onMouseMove: (e) =>
+                goToSelectionWindow.handleIdleWindowMouseMove(idleState, e),
+            onMouseUp: () => mouseDown.handleWindowMouseUp(idleState),
         },
         actions: {
             addSticker: {
