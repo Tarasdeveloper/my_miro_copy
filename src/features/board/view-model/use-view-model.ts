@@ -18,13 +18,18 @@ import {
     NodesDraggingiewState,
     useNodesDraggingViewModel,
 } from "./variants/nodes-dragging";
+import {
+    useWindowDraggingViewModel,
+    WindowDraggingViewState,
+} from "./variants/window-dragging";
 
 export type ViewState =
     | AddStickerViewState
     | EditStickerViewState
     | IdleViewState
     | SelectionWindowViewState
-    | NodesDraggingiewState;
+    | NodesDraggingiewState
+    | WindowDraggingViewState;
 
 export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
     const [viewState, setViewState] = useState<ViewState>(() => goToIdle());
@@ -39,6 +44,7 @@ export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
     const idleViewModel = useIdleViewModel(newParams);
     const selectionWindowViewModel = useSelectionWindowViewModel(newParams);
     const nodesDraggingViewModel = useNodesDraggingViewModel(newParams);
+    const windowDraggingViewModel = useWindowDraggingViewModel(newParams);
 
     let viewModel: ViewModel;
 
@@ -57,8 +63,10 @@ export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
             viewModel = selectionWindowViewModel(viewState);
             break;
         case "nodes-dragging":
-            console.log("nodes-dragging", viewState);
             viewModel = nodesDraggingViewModel(viewState);
+            break;
+        case "window-dragging":
+            viewModel = windowDraggingViewModel(viewState);
             break;
         default:
             throw new Error("Invalid view state");

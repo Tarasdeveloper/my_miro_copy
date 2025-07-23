@@ -1,4 +1,4 @@
-import { Point } from "../../domain/point";
+import { Point, vectorFromPoints } from "../../domain/point";
 import { pointOnScreenToCanvas } from "../../domain/screen-to-canvas";
 import { ViewModelParams } from "../view-model-params";
 import { ViewModel } from "../view-model-type";
@@ -15,12 +15,17 @@ export function useNodesDraggingViewModel({
     nodesModel,
     canvasRect,
     setViewState,
+    windowPositionModel,
 }: ViewModelParams) {
     const getNodes = (state: NodesDraggingiewState) =>
         nodesModel.nodes.map((node) => {
             if (state.nodesToMove.has(node.id)) {
+                const diff = vectorFromPoints(state.startPoint, state.endPoint);
+
                 return {
                     ...node,
+                    x: node.x + diff.x,
+                    y: node.y + diff.y,
                     isSelected: true,
                 };
             }
@@ -39,6 +44,7 @@ export function useNodesDraggingViewModel({
                             x: e.clientX,
                             y: e.clientY,
                         },
+                        windowPositionModel.position,
                         canvasRect,
                     );
                     setViewState({
@@ -47,6 +53,11 @@ export function useNodesDraggingViewModel({
                     });
                 },
                 onMouseUp: () => {
+                    const nodesToMove = nodes.filter((node) =>
+                        state.nodesToMove.has(node.id),
+                    );
+                    nodesModel.updateNodesPositions(nodesToMove);
+
                     setViewState(
                         goToIdle({
                             selectedIds: state.nodesToMove,

@@ -2,7 +2,11 @@ import { IdleViewState } from ".";
 import { ViewModelParams } from "../../view-model-params";
 import { pointOnScreenToCanvas } from "@/features/board/domain/screen-to-canvas";
 
-export function useMouseDown({ setViewState, canvasRect }: ViewModelParams) {
+export function useMouseDown({
+    setViewState,
+    canvasRect,
+    windowPositionModel,
+}: ViewModelParams) {
     const handleOverlayMouseDown = (
         idleState: IdleViewState,
         e: React.MouseEvent<HTMLDivElement>,
@@ -12,6 +16,7 @@ export function useMouseDown({ setViewState, canvasRect }: ViewModelParams) {
                 x: e.clientX,
                 y: e.clientY,
             },
+            windowPositionModel.position,
             canvasRect,
         );
         setViewState({
@@ -20,6 +25,7 @@ export function useMouseDown({ setViewState, canvasRect }: ViewModelParams) {
                 type: "overlay",
                 x: point.x,
                 y: point.y,
+                isRigthClick: e.button === 2,
             },
         });
     };
@@ -33,6 +39,7 @@ export function useMouseDown({ setViewState, canvasRect }: ViewModelParams) {
                 x: e.clientX,
                 y: e.clientY,
             },
+            windowPositionModel.position,
             canvasRect,
         );
         setViewState({
@@ -42,6 +49,7 @@ export function useMouseDown({ setViewState, canvasRect }: ViewModelParams) {
                 x: point.x,
                 y: point.y,
                 nodeId,
+                isRigthClick: e.button === 2,
             },
         });
     };

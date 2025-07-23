@@ -1,33 +1,33 @@
-import { IdleViewState } from ".";
-import { ViewModelParams } from "../../view-model-params";
 import { pointOnScreenToCanvas } from "@/features/board/domain/screen-to-canvas";
+import { ViewModelParams } from "../../view-model-params";
+import { IdleViewState } from ".";
 import { distanceFromPoints } from "@/features/board/domain/point";
-import { goToSelectionWindow } from "../selection-window";
+import { goToWindowDragging } from "../window-dragging";
 
-export function useGoToSelectionWindow(params: ViewModelParams) {
-    const { setViewState, canvasRect } = params;
-
+export function useGoToWindowDragging({
+    canvasRect,
+    setViewState,
+    windowPositionModel,
+}: ViewModelParams) {
     const handleIdleWindowMouseMove = (
         idleState: IdleViewState,
         e: MouseEvent,
     ) => {
-        if (idleState.mouseDown && idleState.mouseDown.type === "overlay") {
+        if (idleState.mouseDown && idleState.mouseDown.isRigthClick) {
             const currentPoint = pointOnScreenToCanvas(
                 {
                     x: e.clientX,
                     y: e.clientY,
                 },
+                windowPositionModel.position,
                 canvasRect,
             );
 
             if (distanceFromPoints(idleState.mouseDown, currentPoint) > 5) {
                 setViewState(
-                    goToSelectionWindow({
+                    goToWindowDragging({
                         startPoint: idleState.mouseDown,
                         endPoint: currentPoint,
-                        initialSelectedIds: e.shiftKey
-                            ? idleState.selectedIds
-                            : undefined,
                     }),
                 );
             }

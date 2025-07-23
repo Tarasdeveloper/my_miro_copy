@@ -1,4 +1,5 @@
 import { Rect } from "../domain/rect";
+import { WindowPosition } from "../model/window-position";
 
 type ViewModelNode = {
     id: string;
@@ -16,6 +17,7 @@ type ViewModelNode = {
 export type ViewModel = {
     nodes: ViewModelNode[];
     selectionWindow?: Rect;
+    windowPosition?: WindowPosition;
     layout?: {
         onKeyDown: (e: React.KeyboardEvent<HTMLDivElement>) => void;
     };
