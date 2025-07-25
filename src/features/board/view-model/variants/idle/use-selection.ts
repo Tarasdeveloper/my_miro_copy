@@ -1,4 +1,3 @@
-import { MouseEvent } from "react";
 import {
     SelectionModifier,
     selectItems,
@@ -25,7 +24,7 @@ export function useSelection({ setViewState }: ViewModelParams) {
     const handleNodeClick = (
         idleState: IdleViewState,
         nodeId: string,
-        e: MouseEvent<HTMLButtonElement>,
+        e: React.MouseEvent,
     ) => {
         if (e.ctrlKey || e.shiftKey) {
             select(idleState, [nodeId], "toggle");

@@ -1,4 +1,3 @@
-import { MouseEvent } from "react";
 import { IdleViewState } from ".";
 import { ViewModelParams } from "../../view-model-params";
 import { goToEditSticker } from "../edit-sticker";
@@ -8,7 +7,7 @@ export function useGoToEditSticker(params: ViewModelParams) {
     const handleNodeClick = (
         idleState: IdleViewState,
         nodeId: string,
-        e: MouseEvent<HTMLButtonElement>,
+        e: React.MouseEvent,
     ) => {
         if (
             idleState.selectedIds.size === 1 &&

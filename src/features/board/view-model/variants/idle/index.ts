@@ -3,7 +3,6 @@ import { ViewModelParams } from "../../view-model-params";
 import { ViewModel } from "../../view-model-type";
 import { useSelection } from "./use-selection";
 import { useDeleteSelected } from "./use-delete-selected";
-import { useGoToAddSticker } from "./use-go-to-add-sticker";
 import { useGoToEditSticker } from "./use-go-to-edit-sticker";
 import { useMouseDown } from "./use-mouse-down";
 import { useGoToSelectionWindow } from "./use-go-to-selection-window";
@@ -34,7 +33,6 @@ export function useIdleViewModel(params: ViewModelParams) {
 
     const deleteSelected = useDeleteSelected(params);
     const goToEditSticker = useGoToEditSticker(params);
-    const goToAddSticker = useGoToAddSticker(params);
     const goToSelectionWindow = useGoToSelectionWindow(params);
     const goToNodesDragging = useGoToNodesDragging(params);
     const goToWindowDragging = useGoToWindowDragging(params);
@@ -45,9 +43,9 @@ export function useIdleViewModel(params: ViewModelParams) {
         nodes: nodesModel.nodes.map((node) => ({
             ...node,
             isSelected: selection.isSelected(idleState, node.id),
-            onMouseDown: (e) =>
+            onMouseDown: (e: React.MouseEvent) =>
                 mouseDown.handleNodeMouseDown(idleState, node.id, e),
-            onMouseUp: (e) => {
+            onMouseUp: (e: React.MouseEvent) => {
                 if (!mouseDown.getIsStickerMouseDown(idleState, node.id))
                     return;
                 const clickResult = goToEditSticker.handleNodeClick(
@@ -62,7 +60,6 @@ export function useIdleViewModel(params: ViewModelParams) {
         layout: {
             onKeyDown: (e) => {
                 deleteSelected.handleKeyDown(idleState, e);
-                goToAddSticker.handleKeyDown(e);
             },
         },
         overlay: {
@@ -76,12 +73,6 @@ export function useIdleViewModel(params: ViewModelParams) {
                 goToWindowDragging.handleIdleWindowMouseMove(idleState, e);
             },
             onMouseUp: () => mouseDown.handleWindowMouseUp(idleState),
-        },
-        actions: {
-            addSticker: {
-                isActive: false,
-                onClick: goToAddSticker.handleActionClick,
-            },
         },
     });
 }
