@@ -29,6 +29,7 @@ import {
     DrawArrowViewState,
     useDrawArrowViewModel,
 } from "./variants/draw-arrow";
+import { useResolveRelativeStaticDecorator } from "./decorator/resolve-relative";
 
 export type ViewState =
     | AddArrowViewState
@@ -64,15 +65,18 @@ export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
 
     switch (viewState.type) {
         case "idle": {
-            viewModel = commonActionsDecorator(idleViewModel(viewState));
+            viewModel = idleViewModel(viewState);
+            viewModel = commonActionsDecorator(viewModel);
             break;
         }
         case "add-arrow": {
-            viewModel = commonActionsDecorator(addArrowViewModel());
+            viewModel = addArrowViewModel();
+            viewModel = commonActionsDecorator(viewModel);
             break;
         }
         case "add-sticker": {
-            viewModel = commonActionsDecorator(addStickerViewModel());
+            viewModel = addStickerViewModel();
+            viewModel = commonActionsDecorator(viewModel);
             break;
         }
         case "draw-arrow": {
@@ -99,6 +103,7 @@ export function useViewModel(params: Omit<ViewModelParams, "setViewState">) {
         default:
             throw new Error("Invalid view state");
     }
-
-    return zoomDecorator(viewModel);
+    viewModel = zoomDecorator(viewModel);
+    viewModel = useResolveRelativeStaticDecorator(viewModel);
+    return viewModel;
 }

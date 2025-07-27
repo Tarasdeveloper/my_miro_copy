@@ -17,8 +17,8 @@ export function useNodesDraggingViewModel({
     setViewState,
     windowPositionModel,
 }: ViewModelParams) {
-    const getNodes = (state: NodesDraggingiewState) =>
-        nodesModel.nodes.map((node) => {
+    const getNodes = (state: NodesDraggingiewState) => {
+        return nodesModel.nodes.map((node) => {
             if (state.nodesToMove.has(node.id)) {
                 const diff = vectorFromPoints(state.startPoint, state.endPoint);
 
@@ -38,6 +38,7 @@ export function useNodesDraggingViewModel({
             }
             return node;
         });
+    };
 
     return (state: NodesDraggingiewState): ViewModel => {
         const nodes = getNodes(state);
@@ -67,14 +68,12 @@ export function useNodesDraggingViewModel({
                                 return [
                                     {
                                         id: node.id,
-                                        x: node.start.x,
-                                        y: node.start.y,
+                                        point: node.start,
                                         type: "start" as const,
                                     },
                                     {
                                         id: node.id,
-                                        x: node.end.x,
-                                        y: node.end.y,
+                                        point: node.end,
                                         type: "end" as const,
                                     },
                                 ];
@@ -82,8 +81,10 @@ export function useNodesDraggingViewModel({
                             return [
                                 {
                                     id: node.id,
-                                    x: node.x,
-                                    y: node.y,
+                                    point: {
+                                        x: node.x,
+                                        y: node.y,
+                                    },
                                 },
                             ];
                         });
