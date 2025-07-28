@@ -8,7 +8,7 @@ export type RelativePoint = Point & {
     relativeTo: string;
 };
 
-export function vectorFromPoints(point1: Point, point2: Point) {
+export function diffPoints(point1: Point, point2: Point) {
     return {
         x: point2.x - point1.x,
         y: point2.y - point1.y,
@@ -35,7 +35,7 @@ export function resolveRelativePoint(base: RelativeBase, point: Point): Point {
         if (basePoint) {
             newPoint = addPoints(newPoint, basePoint);
         }
-        relativeTo = basePoint.relativeTo;
+        relativeTo = basePoint?.relativeTo;
     }
     return newPoint;
 }

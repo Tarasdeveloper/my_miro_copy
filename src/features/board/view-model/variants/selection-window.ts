@@ -28,6 +28,7 @@ export function useSelectionWindowViewModel({
 }: ViewModelParams) {
     const getNodes = (state: SelectionWindowViewState, selectionRect: Rect) => {
         const relativeBase = createRelativeBase(nodesModel.nodes);
+
         return nodesModel.nodes.map((node) => {
             const nodeDimentions = nodesDimensions[node.id];
             const nodeRect =

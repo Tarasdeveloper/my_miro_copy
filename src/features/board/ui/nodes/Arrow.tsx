@@ -1,5 +1,5 @@
 import { Ref } from "react";
-import { Point, vectorFromPoints } from "../../domain/point";
+import { Point, diffPoints } from "../../domain/point";
 import clsx from "clsx";
 
 export function Arrow({
@@ -10,6 +10,7 @@ export function Arrow({
     onMouseDown,
     onMouseUp,
     isSelected,
+    noPointerEvents,
 }: {
     start: Point;
     end: Point;
@@ -18,8 +19,9 @@ export function Arrow({
     onClick?: (e: React.MouseEvent<SVGPathElement>) => void;
     onMouseDown?: (e: React.MouseEvent<SVGPathElement>) => void;
     onMouseUp?: (e: React.MouseEvent<SVGPathElement>) => void;
+    noPointerEvents?: boolean;
 }) {
-    const diff = vectorFromPoints(start, end);
+    const diff = diffPoints(start, end);
     const angle = Math.atan2(diff.y, diff.x);
     const arrowRightAngle = angle + Math.PI * (1 - 1 / 6);
     const arrowLeftAngle = angle - Math.PI * (1 - 1 / 6);
@@ -36,7 +38,9 @@ export function Arrow({
         <svg className="absolute left-0 top-0 pointer-events-none overflow-visible">
             <path
                 className={clsx(
-                    "pointer-events-auto",
+                    noPointerEvents
+                        ? "pointer-events-none"
+                        : "pointer-events-auto",
                     isSelected && "stroke-blue-500 stroke-2 fill-blue-500",
                 )}
                 stroke="black"

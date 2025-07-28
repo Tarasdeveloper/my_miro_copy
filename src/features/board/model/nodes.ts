@@ -76,9 +76,25 @@ export function useNodes() {
     };
 
     const deleteNodes = (ids: string[]) => {
-        setNodes((lastNodes) =>
-            lastNodes.filter((node) => !ids.includes(node.id)),
-        );
+        setNodes((lastNodes) => {
+            const arrowsRelativeIds = lastNodes
+                .filter(
+                    (node) =>
+                        (node.type === "arrow" &&
+                            node.start.relativeTo &&
+                            ids.includes(node.start.relativeTo)) ||
+                        (node.type === "arrow" &&
+                            node.end.relativeTo &&
+                            ids.includes(node.end.relativeTo)),
+                )
+                .map((node) => node.id);
+
+            return lastNodes.filter(
+                (node) =>
+                    !ids.includes(node.id) &&
+                    !arrowsRelativeIds.includes(node.id),
+            );
+        });
     };
 
     const updateNodesPositions = (

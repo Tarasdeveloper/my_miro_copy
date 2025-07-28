@@ -1,4 +1,9 @@
-import { addPoints, Point, vectorFromPoints } from "../../domain/point";
+import {
+    addPoints,
+    isRelativePoint,
+    Point,
+    diffPoints,
+} from "../../domain/point";
 import { pointOnScreenToCanvas } from "../../domain/screen-to-canvas";
 import { ViewModelParams } from "../view-model-params";
 import { ViewModel } from "../view-model-type";
@@ -20,13 +25,17 @@ export function useNodesDraggingViewModel({
     const getNodes = (state: NodesDraggingiewState) => {
         return nodesModel.nodes.map((node) => {
             if (state.nodesToMove.has(node.id)) {
-                const diff = vectorFromPoints(state.startPoint, state.endPoint);
+                const diff = diffPoints(state.startPoint, state.endPoint);
 
                 if (node.type === "arrow") {
                     return {
                         ...node,
-                        start: addPoints(node.start, diff),
-                        end: addPoints(node.end, diff),
+                        start: isRelativePoint(node.start)
+                            ? node.start
+                            : addPoints(node.start, diff),
+                        end: isRelativePoint(node.end)
+                            ? node.end
+                            : addPoints(node.end, diff),
                         isSelected: true,
                     };
                 }
