@@ -6,10 +6,10 @@ import svgr from "vite-plugin-svgr";
 
 export default defineConfig({
     plugins: [react(), tsconfigPaths(), tailwindcss(), svgr()],
-    resolve: {
-        alias: {
-            src: "/src",
-        },
-    },
-    base: "/my_miro_copy/",
+    // resolve: {
+    //     alias: {
+    //         src: "/src",
+    //     },
+    // },
+    // base: "/boards",
 });
