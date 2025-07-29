@@ -21,7 +21,8 @@ export function useDrawArrowViewModel({
 }: ViewModelParams) {
     const addArrow = (state: DrawArrowViewState, endRelativeTo?: string) => {
         const relativeBase = createRelativeBase(nodesModel.nodes);
-        nodesModel.addArrow({
+
+        const newArrow = {
             start: state.startRelativeTo
                 ? {
                       ...diffPoints(
@@ -40,7 +41,8 @@ export function useDrawArrowViewModel({
                       relativeTo: endRelativeTo,
                   }
                 : state.endPoint,
-        });
+        };
+        nodesModel.addArrow(newArrow);
     };
 
     return (state: DrawArrowViewState): ViewModel => {
@@ -58,7 +60,7 @@ export function useDrawArrowViewModel({
                 if (node.type === "sticker") {
                     return {
                         ...node,
-                        onMouseDown: () => {
+                        onMouseUp: () => {
                             addArrow(state, node.id);
                         },
                     };

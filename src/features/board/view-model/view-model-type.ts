@@ -9,8 +9,8 @@ type ViewModelStickerNode = {
     x: number;
     y: number;
     isSelected?: boolean;
-    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     isEditing?: boolean;
+    onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onTextChange?: (text: string) => void;
     onMouseDown?: (e: React.MouseEvent<HTMLButtonElement>) => void;
     onMouseUp?: (e: React.MouseEvent<HTMLButtonElement>) => void;
